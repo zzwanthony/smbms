@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+	http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd
+	">  
+	<!-- 开启注解扫描  -->
+	<context:component-scan base-package="com.zzw"/>
+	
+	<!-- 开启springMvc注解 -->
+	<mvc:annotation-driven/>
+	
+	<!-- 配置登陆拦截器 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<!-- 拦截资源路径 -->
+			<mvc:mapping path="/orderManager/**" />
+			<mvc:mapping path="/providerManager/**" />
+			<mvc:mapping path="/userManager/**" />
+			<!-- 自定义拦截器位置 -->
+			<bean class="com.zzw.intercepters.LoginIntercepters"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!-- 静态资源映射 -->
+	<mvc:resources location="/static/" mapping="/static/**"/>
+	<mvc:resources location="/picture/" mapping="/picture/**"/>
+	
+	<!-- 全局异常配置 -->
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionMappings">
+			<props>
+				<prop key="java.lang.RuntimeException">error</prop>
+			</props>			
+		</property>
+	</bean>
+	
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">    
+	    <!-- 设置默认编码   -->
+	    <property name="defaultEncoding" value="utf-8"></property>  
+	    <!-- 上传图片最大大小    -->
+	    <property name="maxUploadSize" value="10485760"></property>    
+	</bean>
+	
+	<!-- 配置视图解析器 -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 配置前缀 -->
+		<property name="prefix" value="/WEB-INF/jsp/"></property>
+		<!--配置后缀  -->
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+</beans>

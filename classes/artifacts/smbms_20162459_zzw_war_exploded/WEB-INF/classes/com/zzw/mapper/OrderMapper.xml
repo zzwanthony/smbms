@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzw.mapper.OrderMapper">
+
+	<sql id="findOrderAndProviderName">
+		SELECT sb.*,sp.`proName` AS providerName 
+		FROM `smbms_bill` sb,`smbms_provider` sp
+		WHERE sb.`providerId`=sp.`id` AND sb.`deleteState`=1
+	</sql>
+
+	<!-- 分页查询，返回定单信息 -->
+	<select id="findAllBill" resultType="com.zzw.pojo.Bill">
+		<include refid="findOrderAndProviderName"/>
+		LIMIT #{0 },#{1 }
+	</select>
+	
+	<!-- 或取数据总条数、模糊查询数据总条数 -->
+	<select id="getPageCount" resultType="int">
+		SELECT COUNT(1) FROM `smbms_bill` 
+		<where>
+			`deleteState`=1
+			<if test="likeCount == 2">
+				<if test="queryProductName != '' and queryProductName != null">
+					AND `productName` LIKE CONCAT('%',#{queryProductName },'%')
+				</if>
+				<if test="queryProviderId != 0">
+					AND `providerId` = #{queryProviderId }
+				</if>
+				<if test="queryIsPayment != 0">
+					AND `isPayment` = #{queryIsPayment }
+				</if>
+				<if test="startTime != '' and startTime != null">
+					AND `creationDate` &gt; #{startTime }
+				</if>
+				<if test="endTime != '' and endTime != null">
+					AND `creationDate` &lt; #{endTime }
+				</if>
+			</if>
+		</where>
+	</select>
+	
+	<!-- 通过用户名、用户角色、页码获取用户页面 -->
+	<select id="findOrderBySearch" resultType="Bill">
+		<include refid="findOrderAndProviderName"/>
+		<if test="queryProductName !=null and queryProductName !='' ">
+			AND sb.`productName` LIKE CONCAT('%', #{queryProductName }, '%')
+		</if>
+		<if test="queryProviderId != 0 ">
+			AND sb.`providerId` = #{queryProviderId }
+		</if>
+		<if test="queryIsPayment != 0">
+			AND sb.`isPayment` = #{queryIsPayment }
+		</if>
+		<if test="startTime != '' and startTime != null">
+			AND sb.`creationDate` &gt; #{startTime }
+		</if>
+		<if test="endTime != '' and endTime != null">
+			AND sb.`creationDate` &lt; #{endTime }
+		</if>
+		LIMIT #{currentPage },#{pageSize };
+	</select>
+	
+	<!-- 通过BillId获取bill信息 -->
+	<select id="findBillById" resultType="Bill" parameterType="int">
+		<include refid="findOrderAndProviderName"/> 
+		AND sb.`id`=#{0 }
+	</select>
+	
+	<!-- 修改定单信息 -->
+	<update id="modifyBill" parameterType="Bill">
+		UPDATE `smbms_bill` SET
+			`productName`= #{productName },
+			`productUnit`= #{productUnit },
+			`productCount`= #{productCount },
+			`totalPrice`= #{totalPrice },
+			`isPayment`= #{isPayment },
+			`modifyBy`= #{modifyBy },
+			`modifyDate`= #{modifyDate },
+			`providerId`= #{providerId }
+			WHERE `id`= #{id }
+	</update>
+	
+	<!-- 删除定单 -->
+	<delete id="deleteBill" parameterType="int">
+		<!-- DELETE FROM `smbms_bill` WHERE `id` = #{0 }; -->
+		UPDATE `smbms_bill` SET `deleteState` = 0 WHERE `id` = #{0 };
+	</delete>
+	
+	<!-- 添加定单 -->
+	<insert id="addBill">
+		INSERT INTO `smbms_bill` VALUE(NULL,
+			#{billCode },
+			#{productName },
+			#{productDesc },
+			#{productUnit },
+			#{productCount },
+			#{totalPrice },
+			#{isPayment },
+			#{createdBy },
+			#{creationDate },
+			NULL,
+			NULL,
+			#{providerId },
+			1);
+	</insert>
+	
+	<!-- 获取所有定单的供应商id -->
+	<select id="getProviderId" resultType="int" parameterType="int">
+		SELECT COUNT(1) FROM `smbms_bill` WHERE `providerId`=#{0 } AND `isPayment`=1
+	</select>
+	
+	<!-- 通过供应商ID获取所拥有定单信息 -->
+	<select id="proGetBill" resultType="Bill" parameterType="int">
+		SELECT * FROM `smbms_bill` WHERE `providerId`=#{0 } AND `deleteState`=1 AND `deleteState`=1;
+	</select>
+	
+	<select id="getLastBillId" resultType="int">
+		SELECT `id` FROM `smbms_bill` ORDER BY id DESC LIMIT 1;
+	</select>
+</mapper>

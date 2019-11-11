@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzw.mapper.SMBMSMapper">
+	
+	<sql id="findUserAndRoleName">
+		SELECT su.*,sr.`roleName` AS userRoleName 
+		FROM smbms_user su,smbms_role sr 
+		WHERE su.`userRole`=sr.`id`
+	</sql>
+
+	<!-- 登入验证 -->
+	<select id="UserLogin" resultType="User">
+		SELECT * FROM smbms_user 
+		WHERE userCode=#{0} AND userPassword=#{1};
+	</select>
+	
+	<!-- 或取数据总条数、模糊查询数据总条数 -->
+	<select id="getPageCount" resultType="int">
+		SELECT COUNT(1) FROM `smbms_user` su 
+		<if test="likeCount == 2">
+			<where>
+				su.`userName` LIKE CONCAT('%',#{queryName },'%')
+				<if test="queryUserRole != 0">
+					AND su.`userRole`=#{queryUserRole }
+				</if>
+			</where>
+		</if>
+	</select>
+	
+	<!-- 查找全部用户信息 -->
+	<select id="findAllUser" resultType="User" parameterType="int">
+		<include refid="findUserAndRoleName"/>
+		LIMIT #{0 },#{1 };
+	</select>
+	
+	<!-- 通过用户名、用户角色、页码获取用户页面 -->
+	<select id="findUserBySearch" resultType="User">
+		<include refid="findUserAndRoleName"/>
+		<if test="queryName !=null and queryName !=''">
+			AND su.`userName` LIKE CONCAT('%',#{queryName },'%')	
+		</if>
+		<if test="queryUserRole !=null and queryUserRole !=0">
+			AND su.`userRole`=#{queryUserRole } 
+		</if>
+		LIMIT #{currentPage },#{pageSize };
+	</select>
+	
+	<!-- 删除用户信息 -->
+	<select id="deleteUser">
+		DELETE FROM smbms_user WHERE smbms_user.`id`=#{0 };
+	</select>
+	
+	<!-- 根据用户id查找用户信息 -->
+	<select id="findUserByid" resultType="User">
+		<include refid="findUserAndRoleName"/>
+		AND su.`id`=#{0 };
+	</select>
+	
+	<!-- 修改用户信息 -->
+	<update id="updateUserMassage" parameterType="User">
+		UPDATE `smbms_user` 
+		SET userName=#{userName } ,
+			<if test="userPassword != null and userPassword != ''">
+				userPassword=#{userPassword } ,
+			</if>
+			gender=#{gender } ,
+			birthday=#{birthday } ,
+			phone=#{phone } ,
+			address=#{address } ,
+			userRole=#{userRole } ,
+			modifyBy=#{modifyBy } ,
+			modifyDate=#{modifyDate } 
+		WHERE id=#{id };
+	</update>
+	
+	<!-- 验证用户名是否已经存在 -->
+	<select id="userNameTest" resultType="string" parameterType="string">
+		SELECT userCode FROM `smbms_user` WHERE userCode=#{0 };
+	</select>
+	
+	<!-- 增加用户信息 -->
+	<insert id="addUserMassage" parameterType="User">
+		INSERT INTO `smbms_user`
+		VALUE(NULL,#{userCode }, #{userName },
+			#{userPassword }, #{gender }, #{birthday },
+			#{phone }, #{address }, #{userRole },
+			#{createdBy }, #{creationDate }, #{modifyBy },
+			#{modifyDate });
+	</insert>
+	
+	<!-- 修改密码 -->
+	<select id="passwordChange">
+		UPDATE `smbms_user` SET userPassword=#{0 }  WHERE id=#{1 }
+	</select>
+</mapper>

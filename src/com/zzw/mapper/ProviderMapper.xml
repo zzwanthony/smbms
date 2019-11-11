@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzw.mapper.ProviderMapper">
+	<!-- 获取定单页面的供应商名称信息 -->
+	<select id="getAllProvider" resultType="Provider">
+		SELECT `id`,`proName` FROM `smbms_provider` WHERE `deleteState`=1
+	</select>
+	
+	<!-- 获取供应商总数据条数 -->
+	<select id="getCount" resultType="int" parameterType="string">
+		SELECT COUNT(1) FROM `smbms_provider` 
+		<where>
+			 `deleteState`=1
+			<if test="queryProCode!=''">
+				AND `proCode` LIKE CONCAT('%', #{queryProCode}, '%')
+			</if>
+			<if test="queryProName!=''">
+				AND `proName` LIKE CONCAT('%', #{queryProName}, '%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 获取供应商页面展示信息 -->
+	<select id="findAllProvider" resultType="Provider" parameterType="int">
+		SELECT `id`,`proCode`,`proName`,`proContact`,`proPhone`,`proFax`,`creationDate`,`proPicture` 
+		FROM `smbms_provider`
+		<where>
+			 AND `deleteState`=1
+			<if test="queryProCode!=''">
+				AND `proCode`  LIKE CONCAT('%', #{queryProCode}, '%')
+			</if>
+			<if test="queryProName!=''">
+				AND `proName`  LIKE CONCAT('%', #{queryProName}, '%')
+			</if>
+		</where>
+		LIMIT #{currentPage },#{pageSize }
+	</select>
+	
+	<!-- 根据ID获取供应商信息 -->
+	<select id="findProviderById" resultType="Provider" parameterType="int">
+		SELECT * FROM `smbms_provider` WHERE id=#{0 } AND `deleteState`=1;
+	</select>
+	
+	<!-- 修改供应商信息 -->
+	<update id="modifyProvider" parameterType="Provider">
+		UPDATE `smbms_provider` SET
+			`proName`=#{proName } ,
+			`proContact`=#{proContact } ,
+			`proPhone`=#{proPhone } ,
+			`proAddress`=#{proAddress } ,
+			`proFax`=#{proFax } ,
+			`proDesc`=#{proDesc } ,
+			`modifyBy`=#{modifyBy } ,
+			`modifyDate`=#{modifyDate } ,
+			`proPicture`=#{proPicture }
+			WHERE `id`=#{id }
+	</update>
+	
+	<!-- 添加供应商的信息 -->
+	<insert id="addProvider" parameterType="Provider">
+		INSERT INTO `smbms_provider` VALUE
+			(NULL,#{proCode },#{proName },#{proDesc },
+			#{proContact },#{proPhone },#{proAddress },
+			#{proFax },#{createdBy },#{creationDate },NULL,NULL,#{proPicture },1)
+	</insert>
+	
+	<!-- 删除供应商信息 -->
+	<update id="deleteProvider">
+		<!-- DELETE FROM `smbms_provider` WHERE id=#{0 } -->
+		UPDATE `smbms_provider` SET `deleteState` = 0 WHERE `id` = #{0 };
+	</update>
+	
+	<!-- 供应商编码验证重复 -->
+	<select id="proCodeTest" resultType="string" parameterType="string">
+		SELECT `proCode` FROM `smbms_provider` WHERE `proCode` = #{0 }
+	</select>
+	<!-- 供应商编码验证重复 -->
+	<select id="proNameTest" resultType="string" parameterType="string">
+		SELECT `proName` FROM `smbms_provider` WHERE `proName` = #{0 }
+	</select>
+</mapper>

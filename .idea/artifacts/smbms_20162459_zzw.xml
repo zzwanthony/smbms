@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="smbms-20162459-zzw">
+    <output-path>$PROJECT_DIR$/classes/artifacts/smbms_20162459_zzw</output-path>
+    <root id="archive" name="smbms-20162459-zzw.war">
+      <element id="artifact" artifact-name="smbms-20162459-zzw:war exploded" />
+    </root>
+  </artifact>
+</component>
